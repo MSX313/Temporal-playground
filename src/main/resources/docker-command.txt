@@ -1,0 +1,3 @@
+docker compose ps        # وضعیت سرویس‌ها
+docker compose logs -f   # مشاهده زنده لاگ‌ها
+docker compose down      # توقف و حذف کانتینرهای پروژه
