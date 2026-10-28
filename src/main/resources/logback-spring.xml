@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration debug="true">
+
+    <!-- Spring Boot converters -->
+    <conversionRule conversionWord="clr" class="org.springframework.boot.logging.logback.ColorConverter"/>
+    <conversionRule conversionWord="wex" class="org.springframework.boot.logging.logback.WhitespaceThrowableProxyConverter"/>
+    <conversionRule conversionWord="wEx" class="org.springframework.boot.logging.logback.ExtendedWhitespaceThrowableProxyConverter"/>
+
+    <!-- Override از application.yml -->
+    <springProperty scope="context" name="APP_NAME" source="spring.application.name" defaultValue="app"/>
+    <springProperty scope="context" name="LOG_PATH" source="logging.file.path" defaultValue="./logs"/>
+    <springProperty scope="context" name="LOG_LEVEL" source="logging.level.root" defaultValue="INFO"/>
+    <springProperty scope="context" name="PRETTY_LOG" source="infra.logging.pretty-log" defaultValue="true"/>
+
+    <!-- تنظیمات مشترک -->
+    <property name="MAX_FILE_SIZE" value="100MB"/>
+
+    <!-- الگوها -->
+    <property name="CONSOLE_PATTERN"
+              value="%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr([%thread]){faint} [%magenta(%X{traceId:-}),%yellow(%X{spanId:-})]  %clr(%-5level)  %clr(%logger{36}){cyan} - %msg%n"/>
+
+    <property name="FILE_PATTERN"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS, Asia/Tehran} [%thread] %-5level [%X{traceId:-},%X{spanId:-}] %logger{36} - %msg%n%throwable"/>
+
+    <!-- ============ CONSOLE ============ -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${CONSOLE_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- ============ INFO APP FILE ============ -->
+    <appender name="INFO_APP_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/${APP_NAME}-info-app.log</file>
+        <append>true</append>
+        <immediateFlush>true</immediateFlush>
+
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>INFO</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${FILE_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/%d{yyyyMMdd, aux}/${APP_NAME}-info-app.%d{yyyy_MM_dd_HH}.%i.log.zip</fileNamePattern>
+
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>${MAX_FILE_SIZE}</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+    </appender>
+
+    <!-- ============ ERROR APP FILE ============ -->
+    <appender name="ERROR_APP_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/${APP_NAME}-error-app.log</file>
+        <append>true</append>
+        <immediateFlush>true</immediateFlush>
+
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${FILE_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/%d{yyyyMMdd, aux}/${APP_NAME}-error-app.%d{yyyy_MM_dd_HH}.%i.log.zip</fileNamePattern>
+
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>${MAX_FILE_SIZE}</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+    </appender>
+
+    <!-- ============ SECURITY FILE ============ -->
+    <appender name="SECURITY_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/${APP_NAME}-security.log</file>
+        <append>true</append>
+        <immediateFlush>true</immediateFlush>
+
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/%d{yyyyMMdd, aux}/${APP_NAME}-security.%d{yyyy_MM_dd_HH}.%i.log.zip</fileNamePattern>
+
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>${MAX_FILE_SIZE}</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+    </appender>
+
+    <!-- ============ ASYNC WRAPPERS ============ -->
+    <appender name="ASYNC_INFO_APP" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>10000</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <appender-ref ref="INFO_APP_FILE"/>
+    </appender>
+
+    <appender name="ASYNC_ERROR_APP" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>10000</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <appender-ref ref="ERROR_APP_FILE"/>
+    </appender>
+
+    <appender name="ASYNC_SECURITY" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>10000</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <appender-ref ref="SECURITY_FILE"/>
+    </appender>
+
+    <!-- ============ REDUCE NOISY LOGGERS / OLD FILE ============ -->
+
+    <!-- Tomcat -->
+    <logger name="org.apache.catalina.startup.DigesterFactory" level="ERROR"/>
+    <logger name="org.apache.catalina.util.LifecycleBase" level="ERROR"/>
+    <logger name="org.apache.coyote.http11.Http11NioProtocol" level="WARN"/>
+    <logger name="org.apache.tomcat.util.net.NioSelectorPool" level="WARN"/>
+    <logger name="org.apache.tomcat.util.threads.LimitLatch" level="DEBUG"/>
+    <logger name="org.apache.coyote.http11.Http11InputBuffer" level="DEBUG"/>
+
+    <!-- SSHD -->
+    <logger name="org.apache.sshd.common.util.SecurityUtils" level="WARN"/>
+
+    <!-- Jetty -->
+    <logger name="org.eclipse.jetty.util.component.AbstractLifeCycle" level="ERROR"/>
+
+    <!-- Hibernate / Validator -->
+    <logger name="org.hibernate.validator.internal.util.Version" level="WARN"/>
+    <logger name="org.hibernate.orm.deprecation" level="ERROR"/>
+    <logger name="org.hibernate.type" level="TRACE"/>
+    <logger name="org.hibernate.SQL" level="DEBUG"/>
+
+    <!-- Spring Boot Actuator -->
+    <logger name="org.springframework.boot.actuate.endpoint.jmx" level="WARN"/>
+
+    <!-- Project specific old loggers -->
+    <logger name="com.pdr.bis.common.rmi.RmiServiceExporter" level="INFO" additivity="false"/>
+    <logger name="com.mchange" level="INFO" additivity="false"/>
+    <logger name="com.pdr.bis.common.ui.cleaner.TempCleaner" level="INFO" additivity="false"/>
+
+    <!-- Jasypt -->
+    <logger name="com.ulisesbocchio" level="WARN"/>
+
+    <!-- Logback internal -->
+    <logger name="ch.qos.logback" level="WARN"/>
+
+    <!-- ============ EXTRA NOISY LOGGERS / NEW SPRING ============ -->
+
+    <logger name="org.springframework" level="INFO"/>
+    <logger name="org.springframework.boot" level="INFO"/>
+    <logger name="org.springframework.context" level="WARN"/>
+    <logger name="org.springframework.beans" level="WARN"/>
+    <logger name="org.springframework.core.env" level="WARN"/>
+
+    <logger name="org.springframework.web" level="INFO"/>
+    <logger name="org.springframework.web.servlet" level="WARN"/>
+    <logger name="org.springframework.web.filter" level="WARN"/>
+    <logger name="org.springframework.web.client.RestTemplate" level="WARN"/>
+
+    <logger name="org.springframework.security" level="WARN"/>
+    <logger name="org.springframework.security.web" level="WARN"/>
+    <logger name="org.springframework.security.config" level="WARN"/>
+    <logger name="org.springframework.security.oauth2" level="WARN"/>
+
+    <logger name="org.springframework.boot.autoconfigure" level="WARN"/>
+    <logger name="org.springframework.boot.context.config" level="WARN"/>
+    <logger name="org.springframework.boot.web" level="WARN"/>
+
+    <logger name="org.springframework.boot.actuate" level="WARN"/>
+    <logger name="org.springframework.boot.actuate.endpoint" level="WARN"/>
+    <logger name="org.springframework.boot.actuate.endpoint.web" level="WARN"/>
+    <logger name="org.springframework.boot.actuate.health" level="WARN"/>
+    <logger name="org.springframework.boot.actuate.metrics" level="WARN"/>
+
+    <logger name="org.hibernate" level="INFO"/>
+    <logger name="org.hibernate.engine" level="WARN"/>
+    <logger name="org.hibernate.stat" level="WARN"/>
+    <logger name="org.hibernate.cache" level="WARN"/>
+    <logger name="org.hibernate.tool.schema" level="WARN"/>
+    <logger name="org.hibernate.engine.jdbc.spi.SqlExceptionHelper" level="WARN"/>
+
+    <logger name="com.zaxxer.hikari" level="WARN"/>
+    <logger name="com.zaxxer.hikari.HikariConfig" level="WARN"/>
+    <logger name="com.zaxxer.hikari.pool.HikariPool" level="WARN"/>
+
+    <logger name="org.springframework.jdbc" level="WARN"/>
+    <logger name="org.springframework.transaction" level="WARN"/>
+    <logger name="org.springframework.orm.jpa" level="WARN"/>
+
+    <logger name="org.apache.http" level="WARN"/>
+    <logger name="org.apache.http.wire" level="WARN"/>
+    <logger name="org.apache.hc.client5.http" level="WARN"/>
+    <logger name="org.apache.hc.core5.http" level="WARN"/>
+
+    <logger name="reactor.netty" level="WARN"/>
+    <logger name="reactor.netty.http.client" level="WARN"/>
+    <logger name="reactor.netty.http.server" level="WARN"/>
+    <logger name="io.netty" level="WARN"/>
+
+    <logger name="org.apache.kafka" level="WARN"/>
+    <logger name="org.springframework.kafka" level="WARN"/>
+
+    <logger name="feign" level="WARN"/>
+
+    <logger name="org.flywaydb" level="INFO"/>
+    <logger name="liquibase" level="INFO"/>
+
+    <logger name="io.micrometer" level="WARN"/>
+    <logger name="io.prometheus" level="WARN"/>
+
+    <logger name="com.fasterxml.jackson" level="WARN"/>
+
+    <logger name="springfox" level="WARN"/>
+    <logger name="org.springdoc" level="WARN"/>
+
+    <!-- ============ SECURITY LOGGER ============ -->
+    <logger name="SECURITY_LOGGER" additivity="true" level="INFO">
+        <appender-ref ref="ASYNC_SECURITY"/>
+    </logger>
+
+    <!--    <logger name="com.modernisc.security.log" additivity="false" level="INFO">-->
+    <!--        <appender-ref ref="ASYNC_SECURITY"/>-->
+    <!--    </logger>-->
+
+    <!-- ============ ROOT LOGGER ============ -->
+    <root level="${LOG_LEVEL}">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ASYNC_INFO_APP"/>
+        <appender-ref ref="ASYNC_ERROR_APP"/>
+        <!--        <appender-ref ref="ASYNC_SECURITY"/>-->
+    </root>
+
+</configuration>

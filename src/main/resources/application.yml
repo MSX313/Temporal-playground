@@ -1,0 +1,33 @@
+server:
+  port: 9095
+
+spring:
+  application:
+    name: TEMPORAL-PLAYGROUND
+  jackson:
+    serialization:
+      fail-on-empty-beans: false
+  profiles:
+    active: @spring.profiles.active@
+  temporal:
+    namespace: default
+    connection:
+      target: gateway-service.dev.modernisc.com:7233
+
+
+springdoc:
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui
+    operations-sorter: alpha
+    tags-sorter: alpha
+    doc-expansion: none
+    disable-swagger-default-url: true
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  paths-to-exclude: petstore.swagger.io/v2/swagger.json
+  show-actuator: true
+  show-login-endpoint: false
+  writer-with-order-by-keys: true
+  packages-to-scan: com.misc
