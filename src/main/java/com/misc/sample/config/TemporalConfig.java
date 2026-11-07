@@ -1,8 +1,6 @@
 package com.misc.sample.config;
 
-
-import com.misc.sample.greeting.activity.GreetingActivitiesImpl;
-import com.misc.sample.greeting.workflow.GreetingWorkflowImpl;
+import com.misc.sample.review.workflow.ReviewWorkflowImpl;
 import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowClientOptions;
 import io.temporal.serviceclient.WorkflowServiceStubs;
@@ -18,22 +16,22 @@ public class TemporalConfig {
 
     @Bean(destroyMethod = "shutdown")
     public WorkflowServiceStubs workflowServiceStubs(@Value("${spring.temporal.connection.target}") String target) {
-        return WorkflowServiceStubs.newServiceStubs(WorkflowServiceStubsOptions.newBuilder().setTarget(target).build());
+        WorkflowServiceStubsOptions options = WorkflowServiceStubsOptions.newBuilder().setTarget(target).build();
+        return WorkflowServiceStubs.newServiceStubs(options);
     }
 
     @Bean
     public WorkflowClient workflowClient(
             WorkflowServiceStubs workflowServiceStubs, @Value("${spring.temporal.namespace}") String namespace) {
-        return WorkflowClient.newInstance(
-                workflowServiceStubs, WorkflowClientOptions.newBuilder().setNamespace(namespace).build());
+        WorkflowClientOptions options = WorkflowClientOptions.newBuilder().setNamespace(namespace).build();
+        return WorkflowClient.newInstance(workflowServiceStubs, options);
     }
 
     @Bean(initMethod = "start", destroyMethod = "shutdown")
-    public WorkerFactory workerFactory(WorkflowClient workflowClient, GreetingActivitiesImpl greetingActivities) {
+    public WorkerFactory workerFactory(WorkflowClient workflowClient) {
         WorkerFactory factory = WorkerFactory.newInstance(workflowClient);
-        Worker worker = factory.newWorker(TemporalQueues.GREETING);
-        worker.registerWorkflowImplementationTypes(GreetingWorkflowImpl.class);
-        worker.registerActivitiesImplementations(greetingActivities);
+        Worker worker = factory.newWorker(TemporalQueues.REVIEW);
+        worker.registerWorkflowImplementationTypes(ReviewWorkflowImpl.class);
         return factory;
     }
 }

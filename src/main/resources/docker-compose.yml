@@ -1,0 +1,30 @@
+services:
+  temporal:
+    image: temporalio/temporal:latest
+    user: "0:0"
+
+    command:
+      - server
+      - start-dev
+      - --ip
+      - 0.0.0.0
+      - --port
+      - "7233"
+      - --ui-port
+      - "8233"
+      - --db-filename
+      - /var/lib/temporal/temporal.db
+      - --namespace
+      - ncb
+
+    ports:
+      - "7233:7233"
+      - "8233:8233"
+
+    volumes:
+      - temporal-data:/var/lib/temporal
+
+    restart: unless-stopped
+
+volumes:
+  temporal-data:
